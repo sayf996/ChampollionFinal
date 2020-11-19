@@ -35,6 +35,6 @@ public class ChampollionJUnitTest {
 		assertEquals(10 + 20, untel.heuresPrevuesPourUE(uml),
                          "L'enseignant doit maintenant avoir 30 heures prévues pour l'UE 'uml'");		
 		
-	}
+        }
 	
 }

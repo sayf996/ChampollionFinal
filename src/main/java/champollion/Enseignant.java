@@ -1,11 +1,27 @@
 package champollion;
 
+import static java.lang.Math.round;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 public class Enseignant extends Personne {
 
+    private final Set<Intervention> myIntervention;
+    private final Map<UE, Map<TypeIntervention, Integer>> myHashMap = new HashMap<>();
+    private float roundedTotalHours = 0;
+    private float roundedplanTotales = 0;
+    private final ServicePrevu myService = new ServicePrevu(0,0,0);
+    
+    
     // TODO : rajouter les autres méthodes présentes dans le diagramme UML
 
     public Enseignant(String nom, String email) {
         super(nom, email);
+        this.myIntervention = new HashSet<>();
+        
+    
     }
 
     /**
@@ -16,9 +32,12 @@ public class Enseignant extends Personne {
      * @return le nombre total d'heures "équivalent TD" prévues pour cet enseignant, arrondi à l'entier le plus proche
      *
      */
-    public int heuresPrevues() {
+    public float heuresPrevues() {
         // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        myHashMap.keySet().forEach(mapkey -> {
+            roundedTotalHours += heuresPrevuesPourUE(mapkey);
+        });
+        return (int) roundedTotalHours;
     }
 
     /**
@@ -30,9 +49,15 @@ public class Enseignant extends Personne {
      * @return le nombre total d'heures "équivalent TD" prévues pour cet enseignant, arrondi à l'entier le plus proche
      *
      */
-    public int heuresPrevuesPourUE(UE ue) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+    public float heuresPrevuesPourUE(UE ue) {
+       HashMap<TypeIntervention, Integer> myHours = (HashMap<TypeIntervention, Integer>) myHashMap.get(ue);
+            float heuresCM = myHours.get(TypeIntervention.CM) * 1.5f;
+            int heuresTD = myHours.get(TypeIntervention.TD);
+            float heuresTP = myHours.get(TypeIntervention.TP) * 0.75f;
+            int roundedHours = round(heuresCM + heuresTD + heuresTP);
+            
+            return roundedHours;
+        
     }
 
     /**
@@ -44,8 +69,41 @@ public class Enseignant extends Personne {
      * @param volumeTP le volume d'heures de TP
      */
     public void ajouteEnseignement(UE ue, int volumeCM, int volumeTD, int volumeTP) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        
+        myService.setVolumeCM(myService.getVolumeCM() + volumeCM);
+        myService.setVolumeTD(myService.getVolumeTD() + volumeTD);
+        myService.setVolumeTP(myService.getVolumeTP() + volumeTP);
+        
+            
+        if (myHashMap.get(ue) != null) {
+            
+            HashMap<TypeIntervention, Integer> myHours = (HashMap<TypeIntervention, Integer>) myHashMap.get(ue);
+                myHours.put(TypeIntervention.CM, myHours.get(TypeIntervention.CM) + volumeCM);
+                myHours.put(TypeIntervention.TD, myHours.get(TypeIntervention.TD) + volumeTD);
+                myHours.put(TypeIntervention.TP, myHours.get(TypeIntervention.TP) + volumeTP);
+                myHashMap.put(ue, myHours);
+                
+            }
+            else {
+            HashMap<TypeIntervention, Integer> myHours = new HashMap<>();
+                myHours.put(TypeIntervention.TP, volumeTP);
+                myHours.put(TypeIntervention.TD, volumeTD);
+                myHours.put(TypeIntervention.CM, volumeCM);
+                myHashMap.put(ue, myHours);        
+            }
+        
+    }
+    public boolean enSousService() {
+        return heuresPrevues() < heuresPlanifee();
+    }
+    public int heuresPlanifee() {
+        myIntervention.forEach(e -> {
+            roundedplanTotales += e.getDuree();
+        });
+        return (int) roundedplanTotales;
+    }
+    public void ajouteIntervention(Intervention e) {
+        myIntervention.add(e);
     }
 
 }
